@@ -1,0 +1,10 @@
+pr_search/Debug/
+Debug/
+Release/
+ipch/
+/*.opensdf
+/*.pdb
+/*.suo
+/*.sdf
+pr_search/*.user
+pr_search/*.txt
