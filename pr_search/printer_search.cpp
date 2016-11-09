@@ -14,7 +14,7 @@
 // Did initialize WinSock
 BOOL bWSA;
 
-BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount, char *IPserv);
+BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2A** jobsInformation, int* jobsInformationCount, char *IPserv);
 
 void PrintPrinters()
 {
@@ -66,7 +66,7 @@ void PrintPrinters()
                                    (pPrinterEnum1+index)->pComment,
                                    (pPrinterEnum1+index)->Flags);
 
-				JOB_INFO_2W* jobs;
+				JOB_INFO_2A* jobs;
 				int jobCount;
 				if (EnumJobsForPrinterFunctionAllocatedMemory((pPrinterEnum1+index)->pName, &jobs, &jobCount, szIP))
 				{
@@ -91,19 +91,8 @@ clean_up:
 		LocalFree( LocalHandle( pPrinterEnum1));
 
 }
-//convert wstring to string
-std::string wstrtostr(const std::wstring &wstr) 
-{ 
-	// Convert a Unicode string to an ASCII string 
-	std::string strTo; 
-	char *szTo = new char[wstr.length() + 1]; 
-	szTo[wstr.size()] = '\0'; 
-	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL); 
-	strTo = szTo; 
-	delete[] szTo; 
-	return strTo; 
-} 
-BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount, char * IPserv)
+
+BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2A** jobsInformation, int* jobsInformationCount, char * IPserv)
 {
 	//Return if out parameters aren't available
 	if (!jobsInformation || !jobsInformationCount) return FALSE; 
@@ -113,7 +102,7 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** 
 	if (!OpenPrinter(PrinterName, &printerHandle, NULL)) return FALSE;
 
 	//Get the total number of jobs
-	PRINTER_INFO_2W* printerInfo;
+	PRINTER_INFO_2A* printerInfo;
 	DWORD sizeNeededPlaceholder = 0;
 	GetPrinter(printerHandle, 2, NULL, 0, &sizeNeededPlaceholder);
 	if (sizeNeededPlaceholder == 0)
@@ -121,7 +110,7 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** 
 		ClosePrinter(printerHandle);
 		return FALSE;
 	}
-	printerInfo = (PRINTER_INFO_2W*)malloc(sizeNeededPlaceholder);
+	printerInfo = (PRINTER_INFO_2A*)malloc(sizeNeededPlaceholder);
 	if (!printerInfo)
 	{
 		ClosePrinter(printerHandle);
@@ -137,7 +126,7 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** 
 	//Get the size of our jobs buffer
 	DWORD sizeReturnedPlaceHolder;
 	EnumJobs(printerHandle, 0, printerInfo->cJobs, 2, NULL, NULL, &sizeNeededPlaceholder, &sizeReturnedPlaceHolder);
-	JOB_INFO_2W* jobsInformationArray = (JOB_INFO_2W*)malloc(sizeNeededPlaceholder);
+	JOB_INFO_2A* jobsInformationArray = (JOB_INFO_2A*)malloc(sizeNeededPlaceholder);
 	if (!jobsInformationArray)
 	{
 		free(printerInfo);
@@ -155,9 +144,8 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** 
 	}
 
 	*jobsInformation = jobsInformationArray;
-	std::string serv_name;
-	serv_name = wstrtostr(printerInfo->pServerName);
-	struct hostent *hp = gethostbyname(serv_name.c_str());
+	
+	struct hostent *hp = gethostbyname(printerInfo->pServerName);
 	if(!hp)
 		strcpy(IPserv, "ip=???");
 	else
