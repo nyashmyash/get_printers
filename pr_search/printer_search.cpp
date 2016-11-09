@@ -66,14 +66,9 @@ void PrintPrinters()
 					strcpy(szIP, "ip=???");
 				else
 				{
-					DWORD dwIP = ((in_addr*)hp->h_addr_list[0])->S_un.S_addr;
-
-					int a = LOBYTE(LOWORD(dwIP));
-					int b = HIBYTE(LOWORD(dwIP));
-					int c = LOBYTE(HIWORD(dwIP));
-					int d = HIBYTE(HIWORD(dwIP));
-
-					sprintf(szIP, "%d.%d.%d.%d", a, b, c, d);
+					
+					strcpy(szIP,inet_ntoa(*((struct in_addr *)hp->h_addr)));
+				
 					JOB_INFO_2W* jobs;
 					int jobCount;
 					if (EnumJobsForPrinterFunctionAllocatedMemory(pPrinterEnum2->pPrinterName, &jobs, &jobCount))

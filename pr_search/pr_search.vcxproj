@@ -14,6 +14,7 @@
     <ProjectGuid>{4A2BA255-9E11-4CCD-9ACE-FF492F578AA3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>pr_search</RootNamespace>
+    <ProjectName>printer_search</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -86,7 +87,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pr_search.cpp" />
+    <ClCompile Include="printer_search.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
