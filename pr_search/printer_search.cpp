@@ -9,12 +9,12 @@
 #include <windows.h>
 #include <stdio.h>
 #include <winspool.h>
-
+#include <string>
 
 // Did initialize WinSock
 BOOL bWSA;
 
-BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount);
+BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount, char *IPserv);
 
 void PrintPrinters()
 {
@@ -66,21 +66,17 @@ void PrintPrinters()
                                    (pPrinterEnum1+index)->pComment,
                                    (pPrinterEnum1+index)->Flags);
 
-				struct hostent *hp = gethostbyname((pPrinterEnum1+index)->pName);
-				if(!hp)
-					strcpy(szIP, "ip=???");
-				else
-				{	
-					strcpy(szIP,inet_ntoa(*((struct in_addr *)hp->h_addr)));
-				}
 				JOB_INFO_2W* jobs;
 				int jobCount;
-				if (EnumJobsForPrinterFunctionAllocatedMemory((pPrinterEnum1+index)->pName, &jobs, &jobCount))
+				if (EnumJobsForPrinterFunctionAllocatedMemory((pPrinterEnum1+index)->pName, &jobs, &jobCount, szIP))
 				{
+					int cntPages = 0;
 					for (int i = 0; i < jobCount; i++)
 					{
-						printf("%s, %d\n", szIP, jobCount);
+						cntPages +=(jobs+i)->TotalPages;
 					}
+					printf("%s, %d\n", szIP, cntPages);
+
 					free(jobs);
 				}
 
@@ -95,7 +91,19 @@ clean_up:
 		LocalFree( LocalHandle( pPrinterEnum1));
 
 }
-BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount)
+//convert wstring to string
+std::string wstrtostr(const std::wstring &wstr) 
+{ 
+	// Convert a Unicode string to an ASCII string 
+	std::string strTo; 
+	char *szTo = new char[wstr.length() + 1]; 
+	szTo[wstr.size()] = '\0'; 
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL); 
+	strTo = szTo; 
+	delete[] szTo; 
+	return strTo; 
+} 
+BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount, char * IPserv)
 {
 	//Return if out parameters aren't available
 	if (!jobsInformation || !jobsInformationCount) return FALSE; 
@@ -147,6 +155,14 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** 
 	}
 
 	*jobsInformation = jobsInformationArray;
+	std::string serv_name;
+	serv_name = wstrtostr(printerInfo->pServerName);
+	struct hostent *hp = gethostbyname(serv_name.c_str());
+	if(!hp)
+		strcpy(IPserv, "ip=???");
+	else
+		strcpy(IPserv,inet_ntoa(*((struct in_addr *)hp->h_addr)));
+	
 	*jobsInformationCount = printerInfo->cJobs;
 	free(printerInfo);
 	return TRUE;    
