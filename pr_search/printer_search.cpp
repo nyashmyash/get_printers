@@ -70,21 +70,20 @@ void PrintPrinters()
 				if(!hp)
 					strcpy(szIP, "ip=???");
 				else
-				{
-					
+				{	
 					strcpy(szIP,inet_ntoa(*((struct in_addr *)hp->h_addr)));
-				
-					JOB_INFO_2W* jobs;
-					int jobCount;
-					if (EnumJobsForPrinterFunctionAllocatedMemory((pPrinterEnum1+index)->pName, &jobs, &jobCount))
-					{
-						for (int i = 0; i < jobCount; i++)
-						{
-							printf("%s, %d\n", szIP, jobCount);
-						}
-						free(jobs);
-					}
 				}
+				JOB_INFO_2W* jobs;
+				int jobCount;
+				if (EnumJobsForPrinterFunctionAllocatedMemory((pPrinterEnum1+index)->pName, &jobs, &jobCount))
+				{
+					for (int i = 0; i < jobCount; i++)
+					{
+						printf("%s, %d\n", szIP, jobCount);
+					}
+					free(jobs);
+				}
+
 			}
 		}
 	}
