@@ -18,26 +18,26 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** 
 
 void PrintPrinters()
 {
-	DWORD Flags = PRINTER_ENUM_NETWORK; //network printers
+	DWORD  Flags = PRINTER_ENUM_FAVORITE | PRINTER_ENUM_LOCAL | PRINTER_ENUM_NETWORK; //network printers
 
 	DWORD cbBuf;
 	DWORD pcReturned;
 	DWORD index;
-	DWORD Level = 2;
+	DWORD Level = 1;
 	TCHAR Name[500];
-	LPPRINTER_INFO_2 pPrinterEnum2 = NULL;
+	LPPRINTER_INFO_1 pPrinterEnum1 = NULL;
 
 	// Name parameter vanishes
 	memset( Name, 0, sizeof( TCHAR) * 500);
 
 	// Ask for the size of the structure, which we will return
-	::EnumPrinters( Flags, Name, Level, NULL, 0, &cbBuf, &pcReturned);
+	::EnumPrinters( Flags, NULL, Level, NULL, 0, &cbBuf, &pcReturned);
 
 	// Order a memory
-	pPrinterEnum2 = ( LPPRINTER_INFO_2) LocalAlloc( LPTR, cbBuf + 4);
+	pPrinterEnum1 = ( LPPRINTER_INFO_1) LocalAlloc( LPTR, cbBuf + 4);
 
 	// If it does not order
-	if( !pPrinterEnum2) 
+	if( !pPrinterEnum1) 
 	{
 		goto clean_up;
 	}
@@ -46,7 +46,7 @@ void PrintPrinters()
 	if(!EnumPrinters(  Flags,                  // DWORD Flags, printer object types
 		NULL,                    // LPTSTR Name, name of printer object
 		Level,                   // DWORD Level, information level
-		(LPBYTE)pPrinterEnum2,   // LPBYTE pPrinterEnum, printer information buffer
+		(LPBYTE)pPrinterEnum1,   // LPBYTE pPrinterEnum, printer information buffer
 		cbBuf,                   // DWORD cbBuf, size of printer information buffer
 		&cbBuf,                  // LPDWORD pcbNeeded, bytes received or required
 		&pcReturned))			   // LPDWORD pcReturned number of printers enumerated
@@ -59,9 +59,14 @@ void PrintPrinters()
 	{
 		for( index = 0; index < pcReturned; index++) 
 		{
-			if( pPrinterEnum2) 
+			if( pPrinterEnum1+index) 
 			{
-				struct hostent *hp = gethostbyname(pPrinterEnum2->pServerName);
+				printf("%s: %s: %s: %x\n", (pPrinterEnum1+index)->pName,
+                                   (pPrinterEnum1+index)->pDescription,
+                                   (pPrinterEnum1+index)->pComment,
+                                   (pPrinterEnum1+index)->Flags);
+
+				struct hostent *hp = gethostbyname((pPrinterEnum1+index)->pName);
 				if(!hp)
 					strcpy(szIP, "ip=???");
 				else
@@ -71,11 +76,11 @@ void PrintPrinters()
 				
 					JOB_INFO_2W* jobs;
 					int jobCount;
-					if (EnumJobsForPrinterFunctionAllocatedMemory(pPrinterEnum2->pPrinterName, &jobs, &jobCount))
+					if (EnumJobsForPrinterFunctionAllocatedMemory((pPrinterEnum1+index)->pName, &jobs, &jobCount))
 					{
 						for (int i = 0; i < jobCount; i++)
 						{
-							printf("%s, %d", szIP, jobCount);
+							printf("%s, %d\n", szIP, jobCount);
 						}
 						free(jobs);
 					}
@@ -87,8 +92,8 @@ void PrintPrinters()
 clean_up:
 
 	// Release ordered memory
-	if( pPrinterEnum2)
-		LocalFree( LocalHandle( pPrinterEnum2));
+	if( pPrinterEnum1)
+		LocalFree( LocalHandle( pPrinterEnum1));
 
 }
 BOOL EnumJobsForPrinterFunctionAllocatedMemory(char* PrinterName, JOB_INFO_2W** jobsInformation, int* jobsInformationCount)
