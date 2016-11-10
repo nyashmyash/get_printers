@@ -159,8 +159,10 @@ BOOL EnumJobsForPrinterFunctionAllocatedMemory(wchar_t* PrinterName, JOB_INFO_2W
 
 	*jobsInformation = jobsInformationArray;
 	
-
-	if(getHostIP(printerInfo->pServerName, IPserv))
+	wchar_t serv[200];
+	lstrcpy(serv, printerInfo->pServerName);
+	lstrcat( serv,	L"\\root\\cimv2");
+	if(getHostIP(serv, IPserv))
 		lstrcpy(IPserv,L"IP=???");
 	*jobsInformationCount = printerInfo->cJobs;
 	free(printerInfo);
@@ -179,7 +181,6 @@ int main()
 
 	// Get printers
 	PrintPrinters();
-
 	// Release WinSock
 	if(bWSA)
 		WSACleanup();
@@ -187,12 +188,11 @@ int main()
 	return 0;
 }
 
-
+//Need wmi access
 int getHostIP(wchar_t *compName, wchar_t *IPHost)
 {
-
-    HRESULT hres;
 	//wchar_t compName[100] = L"\\\\COMPUTERNAME\\root\\cimv2";
+    HRESULT hres;
     // Step 1: --------------------------------------------------
     // Initialize COM. ------------------------------------------
 
@@ -497,6 +497,7 @@ int getHostIP(wchar_t *compName, wchar_t *IPHost)
     
     CoUninitialize();
 
-    return 0;   // Program successfully completed.
-    
+	
+    return 0; 
+
 }
