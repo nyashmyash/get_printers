@@ -75,7 +75,7 @@ void PrintPrinters()
 		{
 			if( pPrinterEnum1+index) 
 			{
-				printf("%s: %s: %s: %x\n", (pPrinterEnum1+index)->pName,
+				wprintf(L"%s: %s: %s: %x\n", (pPrinterEnum1+index)->pName,
                                    (pPrinterEnum1+index)->pDescription,
                                    (pPrinterEnum1+index)->pComment,
                                    (pPrinterEnum1+index)->Flags);
@@ -89,7 +89,7 @@ void PrintPrinters()
 					{
 						cntPages +=(jobs+i)->TotalPages;
 					}
-					printf("%s, %d\n", szIP, cntPages);
+					wprintf(L"%s, %d\n", szIP, cntPages);
 
 					free(jobs);
 				}
